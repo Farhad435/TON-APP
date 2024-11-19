@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Klik Oyunu</title>
+  <title>TON APP</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
+      background-color: #007BFF; /* Mavi rəng */
+      color: white;
       margin-top: 50px;
     }
     #saygac {
@@ -18,26 +20,26 @@
       padding: 10px 20px;
       font-size: 1.2em;
       cursor: pointer;
-      background-color: #4CAF50;
-      color: white;
+      background-color: #FFD700; /* Qızılı rəng */
+      color: black;
       border: none;
       border-radius: 5px;
     }
     button:hover {
-      background-color: #45a049;
+      background-color: #FFC107;
     }
   </style>
 </head>
 <body>
-  <h1>Klik Oyunu</h1>
-  <p id="saygac">0</p>
+  <h1>TON APP</h1>
+  <p id="saygac">0 Xal</p>
   <button onclick="artir()">Klik et!</button>
 
   <script>
-    let say = 0;
+    let xal = 0;
     function artır() {
-      say++;
-      document.getElementById('saygac').textContent = say;
+      xal += 1; // Hər dəfə 1 xal artır
+      document.getElementById('saygac').textContent = `${xal} Xal`;
     }
   </script>
 </body>
