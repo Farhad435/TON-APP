@@ -1,78 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="az">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clicker Game</title>
-  <script>
-    // Function to update the balance
-    async function updateBalance(newBalance) {
-      const userId = '123456'; // Replace with the actual Telegram ID of the user
-      const userName = 'JohnDoe'; // Replace with the actual Telegram username of the user
-
-      try {
-        const response = await fetch('http://localhost:3000/save-balance', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId,
-            userName,
-            balance: newBalance,
-          }),
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-          alert(`Balance updated successfully! New balance: ${newBalance}`);
-        } else {
-          alert(`Error updating balance: ${result.error}`);
-        }
-      } catch (error) {
-        console.error('Error updating balance:', error);
-        alert('Failed to update balance. Please try again.');
-      }
+  <title>Klik Oyunu</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
     }
-
-    // Example function to simulate earning coins
-    function earnCoins() {
-      const currentBalanceElement = document.getElementById('balance');
-      let currentBalance = parseInt(currentBalanceElement.innerText, 10) || 0;
-
-      // Add 50 coins
-      const newBalance = currentBalance + 50;
-
-      // Update the balance in the UI
-      currentBalanceElement.innerText = newBalance;
-
-      // Send the updated balance to the backend
-      updateBalance(newBalance);
+    #saygac {
+      font-size: 2em;
+      margin: 20px 0;
     }
-  </script>
-  <script>
-    // Load balance when the page loads
-    async function loadBalance() {
-      const userId = '123456'; // Replace with the actual Telegram ID of the user
-  
-      try {
-        const response = await fetch(`http://localhost:3000/get-balance/${userId}`);
-        const data = await response.json();
-  
-        // Display the user's balance
-        document.getElementById('balance').innerText = data.balance;
-      } catch (error) {
-        console.error('Error loading balance:', error);
-        alert('Failed to load balance. Please try again.');
-      }
+    button {
+      padding: 10px 20px;
+      font-size: 1.2em;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
     }
-  
-    // Call loadBalance when the page loads
-    window.onload = loadBalance;
-  </script>  
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
 </head>
 <body>
-  <h1>Clicker Game</h1>
-  <p>Your balance: <span id="balance">0</span> coins</p>
-  <button onclick="earnCoins()">Earn Coins</button>
+  <h1>Klik Oyunu</h1>
+  <p id="saygac">0</p>
+  <button onclick="artir()">Klik et!</button>
+
+  <script>
+    let say = 0;
+    function artır() {
+      say++;
+      document.getElementById('saygac').textContent = say;
+    }
+  </script>
 </body>
 </html>
