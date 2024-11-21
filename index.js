@@ -7,7 +7,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 const edgeConfig = new EdgeConfigClient();
-const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN); // Bot tokeni Vercel-dən alınır
+const bot = new Bot(process.env.BOT_TOKEN); // Bot tokeni Vercel-dən alınır
 
 // İstifadəçi üçün xal əldə et
 const getUserScore = async (userId) => {
