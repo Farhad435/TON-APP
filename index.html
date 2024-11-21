@@ -1,62 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>TON APP</title>
-  <style>
-    body {
-      background-color: blue;
-      color: white;
-      text-align: center;
-      font-family: Arial, sans-serif;
-    }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TON APP Clicker Game</title>
+    <style>
+        body {
+            background-color: #3498db;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        #app-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            font-size: 3rem;
+        }
+
+        .score {
+            font-size: 2rem;
+            margin: 20px 0;
+        }
+
+        .button {
+            background-color: #2ecc71;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            border-radius: 10px;
+            color: white;
+        }
+
+        .button:hover {
+            background-color: #27ae60;
+        }
+    </style>
 </head>
 <body>
-  <h1>TON APP</h1>
-  <h2>Xal: <span id="score">0</span></h2>
-  <button onclick="incrementScore()">Düyməyə Bas</button>
-  <script>
-    let score = 0;
+    <div id="app-container">
+        <h1>TON APP</h1>
+        <div id="score" class="score">Xal: 0</div>
+        <button class="button" onclick="incrementScore()">Xal Artır</button>
+    </div>
 
-    // Xalı artır və serverə göndər
-    async function incrementScore() {
-      score++;
-      document.getElementById("score").innerText = score;
+    <script>
+        let score = 0;
 
-      // Serverə POST sorğusu ilə xalı göndər
-      const response = await fetch("/update-score", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ score }),
-      });
+        // Xalı Blob Database-ə yazan funksiyanı yarat
+        async function incrementScore() {
+            // İstifadəçi id-sini burada əldə edə bilərsən, məsələn, Telegram ID-sini
+            const userId = '123456789'; // Bu, istifadəçinin Telegram ID-si olmalıdır
 
-      if (!response.ok) {
-        console.error("Xal serverə saxlanmadı");
-      }
-    }
+            score++; // Xalı artır
 
-    // Serverdən istifadəçinin əvvəlki xallarını yüklə
-    async function loadScore() {
-      const response = await fetch("/get-score");
-      if (response.ok) {
-        const data = await response.json();
-        score = data.score || 0;
-        document.getElementById("score").innerText = score;
-      } else {
-        console.error("Xallar yüklənmədi");
-      }
-    }
+            // Vercel Blob Database-ə xalı göndərmək üçün API zəngi
+            await fetch(`/api/update-score?userId=${userId}&score=${score}`);
+            
+            // Ekranda xalı yenilə
+            document.getElementById('score').innerText = `Xal: ${score}`;
+        }
 
-    // Səhifə yüklənərkən xalı yüklə
-    loadScore();
-  </script>
+        // Saytı yüklədikdə, istifadəçinin xallarını yükləyən funksiyanı çağır
+        window.onload = async () => {
+            const userId = '123456789'; // İstifadəçinin Telegram ID-si
+            const response = await fetch(`/api/get-score?userId=${userId}`);
+            const data = await response.json();
+            if (data.score !== undefined) {
+                score = data.score;
+                document.getElementById('score').innerText = `Xal: ${score}`;
+            }
+        };
+    </script>
 </body>
 </html>
