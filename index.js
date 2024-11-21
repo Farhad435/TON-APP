@@ -1,68 +1,98 @@
-import { createServer } from "http";
-import { EdgeConfigClient } from "@vercel/edge-config";
-import { Bot } from "grammy";
-import * as dotenv from "dotenv";
+import { Router } from 'itty-router';
+import fetch from 'node-fetch';
 
-// Lokal test üçün .env faylını yüklə
-dotenv.config();
+// Vercel Edge Config üçün lazımi kitabxana
+import { get, set } from '@vercel/edge-config';
 
-const edgeConfig = new EdgeConfigClient();
-const bot = new Bot(process.env.BOT_TOKEN); // Bot tokeni Vercel-dən alınır
+const router = Router();
 
-// İstifadəçi üçün xal əldə et
-const getUserScore = async (userId) => {
-  const scores = (await edgeConfig.get("scores")) || {};
-  return scores[userId] || 0;
-};
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+const WEBHOOK_PATH = `/webhook/${BOT_TOKEN}`;
+const WEBHOOK_URL = `https://<your-vercel-domain>${WEBHOOK_PATH}`;
 
-// İstifadəçinin xallarını yenilə
-const updateUserScore = async (userId, score) => {
-  const scores = (await edgeConfig.get("scores")) || {};
-  scores[userId] = score;
-  await edgeConfig.set("scores", scores);
-};
+// Webhook qurulumu
+async function setWebhook() {
+  const response = await fetch(`${TELEGRAM_API}/setWebhook`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url: WEBHOOK_URL }),
+  });
 
-// Bot əmrləri
-bot.command("start", async (ctx) => {
-  const userId = ctx.from.id.toString();
-  const score = await getUserScore(userId);
-  await ctx.reply(`Salam, ${ctx.from.first_name}! Sizin xallarınız: ${score}`);
+  if (!response.ok) {
+    console.error('Webhook qurulmadı:', await response.text());
+    throw new Error('Webhook setup failed');
+  }
+}
+
+// Başlanğıc endpoint
+router.post(WEBHOOK_PATH, async (request) => {
+  const { message } = await request.json();
+
+  if (message) {
+    const chatId = message.chat.id;
+    const userId = `user_${chatId}`;
+    const text = message.text;
+
+    if (text === '/start') {
+      // İstifadəçini salamlamaq
+      await fetch(`${TELEGRAM_API}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: 'Salam! Sizin xallarınız qeydə alınacaq. Başlamaq üçün clicker səhifəsinə keçid edin.',
+        }),
+      });
+
+      // Xalı sıfırla, əgər mövcud deyilsə
+      const existingScore = await get(userId);
+      if (existingScore === undefined) {
+        await set(userId, 0);
+      }
+    }
+  }
+
+  return new Response('OK', { status: 200 });
 });
 
-// HTTP Server
-createServer(async (req, res) => {
-  // HTML səhifəni qaytarır
-  if (req.method === "GET" && req.url === "/") {
-    res.setHeader("Content-Type", "text/html");
-    res.end(`
-      <!DOCTYPE html>
-      <html>
-      <!-- HTML fayl buraya yerləşdiriləcək -->
-      </html>
-    `);
-  }
-  // İstifadəçinin xallarını serverdən alır
-  else if (req.method === "GET" && req.url === "/get-score") {
-    const userId = "STATIC_USER_ID"; // Dinamik olaraq Telegram ID ilə əvəz olunmalıdır
-    const score = await getUserScore(userId);
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify({ score }));
-  }
-  // İstifadəçinin xallarını serverə saxlayır
-  else if (req.method === "POST" && req.url === "/update-score") {
-    let body = "";
-    req.on("data", (chunk) => (body += chunk));
-    req.on("end", async () => {
-      const { score } = JSON.parse(body);
-      const userId = "STATIC_USER_ID"; // Dinamik olaraq Telegram ID ilə əvəz olunmalıdır
-      await updateUserScore(userId, score);
-      res.end("Score updated");
-    });
-  } else {
-    res.statusCode = 404;
-    res.end("Not Found");
-  }
-}).listen(3000, () => console.log("Server running on port 3000"));
+// Xal artırmaq API
+router.post('/increment-score', async (request) => {
+  const { userId } = await request.json();
 
-// Botu işə sal
-bot.start();
+  const scoreKey = `user_${userId}`;
+  const currentScore = (await get(scoreKey)) || 0;
+
+  const newScore = currentScore + 1;
+  await set(scoreKey, newScore);
+
+  return new Response(JSON.stringify({ score: newScore }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+});
+
+// Səhifəni yükləyərkən xal göstərmək
+router.get('/get-score/:userId', async ({ params }) => {
+  const { userId } = params;
+  const scoreKey = `user_${userId}`;
+
+  const score = (await get(scoreKey)) || 0;
+
+  return new Response(JSON.stringify({ score }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+});
+
+// Yönləndirmə
+router.all('*', () => new Response('Not Found', { status: 404 }));
+
+export default {
+  async fetch(request, env, context) {
+    return router.handle(request);
+  },
+};
+
+// Webhook quraşdır
+setWebhook().catch(console.error);
