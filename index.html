@@ -1,54 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clicker Game</title>
+  <title>TON APP</title>
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background-color: #007bff; /* Mavi arxa fon */
+      background-color: blue;
       color: white;
-    }
-    h1 {
-      margin-top: 20%;
-      font-size: 3rem;
-    }
-    #score {
-      font-size: 2rem;
-      margin: 20px 0;
+      text-align: center;
+      font-family: Arial, sans-serif;
     }
     button {
-      padding: 15px 30px;
-      font-size: 1.5rem;
-      background-color: white;
-      color: #007bff;
-      border: none;
-      border-radius: 5px;
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
       cursor: pointer;
-      transition: transform 0.1s ease-in-out;
-    }
-    button:active {
-      transform: scale(0.95);
     }
   </style>
 </head>
 <body>
   <h1>TON APP</h1>
-  <div id="score">Xal: 0</div>
-  <button id="click-btn">Bas!</button>
-
+  <h2>Xal: <span id="score">0</span></h2>
+  <button onclick="incrementScore()">Düyməyə Bas</button>
   <script>
     let score = 0;
-    const scoreElement = document.getElementById('score');
-    const button = document.getElementById('click-btn');
 
-    button.addEventListener('click', () => {
+    // Xalı artır və serverə göndər
+    async function incrementScore() {
       score++;
-      scoreElement.textContent = `Xal: ${score}`;
-    });
+      document.getElementById("score").innerText = score;
+
+      // Serverə POST sorğusu ilə xalı göndər
+      const response = await fetch("/update-score", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ score }),
+      });
+
+      if (!response.ok) {
+        console.error("Xal serverə saxlanmadı");
+      }
+    }
+
+    // Serverdən istifadəçinin əvvəlki xallarını yüklə
+    async function loadScore() {
+      const response = await fetch("/get-score");
+      if (response.ok) {
+        const data = await response.json();
+        score = data.score || 0;
+        document.getElementById("score").innerText = score;
+      } else {
+        console.error("Xallar yüklənmədi");
+      }
+    }
+
+    // Səhifə yüklənərkən xalı yüklə
+    loadScore();
   </script>
 </body>
 </html>
