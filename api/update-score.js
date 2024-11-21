@@ -1,11 +1,34 @@
-import { Blob } from '@vercel/blob';
+import { BlobServiceClient } from "@azure/storage-blob";
+
+const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+
+const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+const containerClient = blobServiceClient.getContainerClient("clicker-scores");
 
 export default async function handler(req, res) {
-    const { userId, score } = req.query;
+  if (req.method === 'POST') {
+    const { telegramId } = req.body;
 
-    // Blob Database-ə bağlantı qurulması
-    const blob = new Blob('your-blob-namespace'); // Əslində burada Blob-dan istifadə etməlisiniz
-    await blob.set(`user_${userId}_score`, score); // Xalı saxlamaq
+    if (!telegramId) {
+      return res.status(400).json({ error: "Telegram ID is required" });
+    }
 
-    res.status(200).json({ message: 'Score updated successfully!' });
+    const blobClient = containerClient.getBlockBlobClient(telegramId);
+    
+    try {
+      // İstifadəçinin mövcud xalına yenisini əlavə et
+      const existingBlob = await blobClient.downloadToBuffer();
+      let score = existingBlob.length ? parseInt(existingBlob.toString()) : 0;
+      score += 1; // Xalı bir vahid artır
+
+      // Yeni xal ilə yenilə
+      await blobClient.upload(Buffer.from(score.toString()), score.toString().length);
+
+      return res.status(200).json({ score });
+    } catch (error) {
+      return res.status(500).json({ error: "Failed to update score" });
+    }
+  } else {
+    res.status(405).json({ error: "Method Not Allowed" });
+  }
 }
