@@ -1,52 +1,54 @@
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TON APP</title>
+  <title>Clicker Game</title>
   <style>
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
       text-align: center;
-      background-color: #007BFF; /* Mavi rəng */
+      background-color: #007bff; /* Mavi arxa fon */
       color: white;
-      height: 100vh; /* Ekran hündürlüyünü tam örtmək üçün */
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      margin: 0;
     }
-    #saygac {
-      font-size: 2em;
+    h1 {
+      margin-top: 20%;
+      font-size: 3rem;
+    }
+    #score {
+      font-size: 2rem;
       margin: 20px 0;
     }
     button {
-      padding: 20px 40px; /* Düyməni böyütmək üçün */
-      font-size: 1.5em; /* Mətnin ölçüsü */
-      cursor: pointer;
-      background-color: #FFD700; /* Qızılı rəng */
-      color: black;
+      padding: 15px 30px;
+      font-size: 1.5rem;
+      background-color: white;
+      color: #007bff;
       border: none;
-      border-radius: 10px;
-      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Kölgə əlavə edildi */
+      border-radius: 5px;
+      cursor: pointer;
+      transition: transform 0.1s ease-in-out;
     }
-    button:hover {
-      background-color: #FFC107;
+    button:active {
+      transform: scale(0.95);
     }
   </style>
 </head>
 <body>
   <h1>TON APP</h1>
-  <p id="saygac">0 Xal</p>
-  <button onclick="artır()">Klik et!</button>
+  <div id="score">Xal: 0</div>
+  <button id="click-btn">Bas!</button>
 
   <script>
-    let xal = 0;
-    function artır() {
-      xal += 1; // Hər dəfə 1 xal artır
-      document.getElementById('saygac').textContent = `${xal} Xal`;
-    }
+    let score = 0;
+    const scoreElement = document.getElementById('score');
+    const button = document.getElementById('click-btn');
+
+    button.addEventListener('click', () => {
+      score++;
+      scoreElement.textContent = `Xal: ${score}`;
+    });
   </script>
 </body>
 </html>
