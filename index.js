@@ -6,6 +6,7 @@ import { get, set } from '@vercel/edge-config';
 
 const router = Router();
 
+// BOT_TOKEN ətraf mühit dəyişəni
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 const WEBHOOK_PATH = `/webhook/${BOT_TOKEN}`;
@@ -48,7 +49,7 @@ router.post(WEBHOOK_PATH, async (request) => {
       // Xalı sıfırla, əgər mövcud deyilsə
       const existingScore = await get(userId);
       if (existingScore === undefined) {
-        await set(userId, 0);
+        await set(userId, 0); // Yeni istifadəçi üçün xal sıfırdır
       }
     }
   }
@@ -64,7 +65,7 @@ router.post('/increment-score', async (request) => {
   const currentScore = (await get(scoreKey)) || 0;
 
   const newScore = currentScore + 1;
-  await set(scoreKey, newScore);
+  await set(scoreKey, newScore); // Yeni xal saxlama
 
   return new Response(JSON.stringify({ score: newScore }), {
     status: 200,
