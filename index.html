@@ -6,48 +6,78 @@
   <title>TON APP</title>
   <style>
     body {
-      background-color: blue;
-      color: white;
+      background-color: #87CEEB; /* Mavi arxa fon */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
       font-family: Arial, sans-serif;
-      text-align: center;
-      padding-top: 50px;
+    }
+    h1 {
+      font-size: 3rem;
+      color: #ffffff;
+    }
+    #score {
+      font-size: 2rem;
+      color: #ffffff;
+      margin: 20px 0;
     }
     button {
-      margin-top: 20px;
       padding: 10px 20px;
-      font-size: 18px;
+      font-size: 1.5rem;
+      color: #ffffff;
+      background-color: #007BFF;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
     }
   </style>
 </head>
 <body>
   <h1>TON APP</h1>
-  <h2>Score: <span id="score">0</span></h2>
-  <button onclick="incrementScore()">Click Me</button>
+  <div id="score">0</div>
+  <button id="increment-btn">Click Me!</button>
 
   <script>
-    const telegramId = '123456789'; // Replace with dynamic Telegram ID
-    let score = 0;
+    const userId = '<Telegram User ID>'; // İstifadəçinin Telegram ID-sini burada təyin edin
 
-    async function fetchScore() {
-      const response = await fetch(`/api/get-score?telegramId=${telegramId}`);
-      const data = await response.json();
-      score = data.score || 0;
-      document.getElementById('score').textContent = score;
+    // Xalı al
+    async function getScore() {
+      const res = await fetch('/api/get-score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+
+      const data = await res.json();
+      document.getElementById('score').innerText = data.score || 0;
     }
 
-    async function incrementScore() {
-      score += 1;
-      document.getElementById('score').textContent = score;
-
+    // Xalı artır
+    async function updateScore(newScore) {
       await fetch('/api/update-score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegramId, score }),
+        body: JSON.stringify({ userId, score: newScore }),
       });
     }
 
-    fetchScore();
+    // Düyməyə basma funksiyası
+    document.getElementById('increment-btn').addEventListener('click', async () => {
+      const currentScore = parseInt(document.getElementById('score').innerText, 10);
+      const newScore = currentScore + 1;
+
+      document.getElementById('score').innerText = newScore;
+      await updateScore(newScore);
+    });
+
+    // Sayt yükləndikdə xalı geri al
+    window.onload = getScore;
   </script>
 </body>
 </html>
