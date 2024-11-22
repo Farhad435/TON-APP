@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TON APP</title>
+  <style>
+    body {
+      background-color: #87CEEB;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      font-size: 3rem;
+      color: #ffffff;
+    }
+    #score {
+      font-size: 2rem;
+      color: #ffffff;
+      margin: 20px 0;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1.5rem;
+      color: #ffffff;
+      background-color: #007BFF;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>TON APP</h1>
+  <div id="score">0</div>
+  <button id="increment-btn">Click Me!</button>
+
+  <script>
+    const userId = localStorage.getItem('userId') || prompt('Enter Telegram ID:');
+    localStorage.setItem('userId', userId);
+
+    async function getScore() {
+      const res = await fetch('/api/get-score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+      const data = await res.json();
+      document.getElementById('score').innerText = data.score || 0;
+    }
+
+    async function updateScore(newScore) {
+      await fetch('/api/update-score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, score: newScore }),
+      });
+    }
+
+    document.getElementById('increment-btn').addEventListener('click', async () => {
+      const currentScore = parseInt(document.getElementById('score').innerText, 10);
+      const newScore = currentScore + 1;
+
+      document.getElementById('score').innerText = newScore;
+      await updateScore(newScore);
+    });
+
+    window.onload = getScore;
+  </script>
+</body>
+</html>
+
