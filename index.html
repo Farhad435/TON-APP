@@ -3,60 +3,82 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clicker Game</title>
+  <title>TON APP</title>
   <style>
     body {
-      background-color: #0000FF; /* Mavi arxa fon */
-      text-align: center;
-      color: white;
-      font-family: Arial, sans-serif;
-      padding-top: 100px;
+      background-color: #87CEEB; /* Mavi fon */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
     }
-    #score {
+    h1 {
+      font-size: 3rem;
+      color: #fff;
+    }
+    p {
       font-size: 2rem;
-      margin-bottom: 20px;
+      color: #fff;
+      margin: 20px 0;
     }
-    #clickButton {
+    button {
       padding: 10px 20px;
-      font-size: 1rem;
-      cursor: pointer;
-      border: none;
-      background-color: #ff4500;
+      font-size: 1.5rem;
+      background-color: #4CAF50;
       color: white;
+      border: none;
       border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
     }
   </style>
 </head>
 <body>
   <h1>TON APP</h1>
-  <div id="score">Xal: 0</div>
-  <button id="clickButton" onclick="incrementScore()">Düyməyə bas</button>
+  <p>Score: <span id="score">0</span></p>
+  <button id="incrementButton">Click Me!</button>
 
   <script>
-    // Telegram ID-ni əldə etmək üçün istifadəçinin məlumatlarını backend-dən alma
-    const userTelegramId = "user-telegram-id"; // Bunu backend ilə əlaqələndirəcəksiniz
+    const telegramId = new URLSearchParams(window.location.search).get('telegramId');
+    let score = 0;
 
-    async function incrementScore() {
-      const response = await fetch('/api/update-score', {
+    // API URLs
+    const getScoreUrl = `/api/get-score?telegramId=${telegramId}`;
+    const updateScoreUrl = `/api/update-score`;
+
+    // Load the user's score on page load
+    async function loadScore() {
+      const response = await fetch(getScoreUrl);
+      if (response.ok) {
+        const data = await response.json();
+        score = data.score || 0;
+        document.getElementById('score').textContent = score;
+      }
+    }
+
+    // Update score on the server
+    async function updateScore() {
+      await fetch(updateScoreUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ telegramId: userTelegramId }),
+        body: JSON.stringify({ telegramId, score }),
       });
-
-      const data = await response.json();
-      document.getElementById('score').innerText = 'Xal: ' + data.score;
     }
 
-    async function loadScore() {
-      const response = await fetch('/api/get-score?telegramId=' + userTelegramId);
-      const data = await response.json();
-      document.getElementById('score').innerText = 'Xal: ' + data.score;
-    }
+    // Increment score
+    document.getElementById('incrementButton').addEventListener('click', () => {
+      score++;
+      document.getElementById('score').textContent = score;
+      updateScore();
+    });
 
-    // Səhifə yüklənəndə xal yüklə
-    window.onload = loadScore;
+    loadScore();
   </script>
 </body>
 </html>
