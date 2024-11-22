@@ -6,79 +6,48 @@
   <title>TON APP</title>
   <style>
     body {
-      background-color: #87CEEB; /* Mavi fon */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      height: 100vh;
-      margin: 0;
-    }
-    h1 {
-      font-size: 3rem;
-      color: #fff;
-    }
-    p {
-      font-size: 2rem;
-      color: #fff;
-      margin: 20px 0;
+      background-color: blue;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 50px;
     }
     button {
+      margin-top: 20px;
       padding: 10px 20px;
-      font-size: 1.5rem;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
+      font-size: 18px;
       cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
     }
   </style>
 </head>
 <body>
   <h1>TON APP</h1>
-  <p>Score: <span id="score">0</span></p>
-  <button id="incrementButton">Click Me!</button>
+  <h2>Score: <span id="score">0</span></h2>
+  <button onclick="incrementScore()">Click Me</button>
 
   <script>
-    const telegramId = new URLSearchParams(window.location.search).get('telegramId');
+    const telegramId = '123456789'; // Replace with dynamic Telegram ID
     let score = 0;
 
-    // API URLs
-    const getScoreUrl = `/api/get-score?telegramId=${telegramId}`;
-    const updateScoreUrl = `/api/update-score`;
-
-    // Load the user's score on page load
-    async function loadScore() {
-      const response = await fetch(getScoreUrl);
-      if (response.ok) {
-        const data = await response.json();
-        score = data.score || 0;
-        document.getElementById('score').textContent = score;
-      }
+    async function fetchScore() {
+      const response = await fetch(`/api/get-score?telegramId=${telegramId}`);
+      const data = await response.json();
+      score = data.score || 0;
+      document.getElementById('score').textContent = score;
     }
 
-    // Update score on the server
-    async function updateScore() {
-      await fetch(updateScoreUrl, {
+    async function incrementScore() {
+      score += 1;
+      document.getElementById('score').textContent = score;
+
+      await fetch('/api/update-score', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ telegramId, score }),
       });
     }
 
-    // Increment score
-    document.getElementById('incrementButton').addEventListener('click', () => {
-      score++;
-      document.getElementById('score').textContent = score;
-      updateScore();
-    });
-
-    loadScore();
+    fetchScore();
   </script>
 </body>
 </html>
